@@ -26,15 +26,17 @@
             };
 
             mediaRecorder.onstop = function() {
-                const blob = new Blob(recordedChunks);
-                const url = URL.createObjectURL(blob);
-                const downloadLink = document.getElementById("downloadLink");
-                downloadLink.href = url;
-                downloadLink.download = "recording." + blob.type.split('/')[1];
-                downloadLink.style.display = "block";
-                downloadLink.innerText = "Descargar Grabación (" + blob.type + ")";
-                recordedChunks = [];
-            };
+    const blob = new Blob(recordedChunks);
+    let mimeType = blob.type || 'audio/webm';  // Asume un tipo predeterminado si no se puede determinar
+    const url = URL.createObjectURL(blob);
+    const downloadLink = document.getElementById("downloadLink");
+    downloadLink.href = url;
+    let extension = mimeType.split('/')[1] || 'webm';  // Usa 'webm' como extensión predeterminada
+    downloadLink.download = "recording." + extension;
+    downloadLink.style.display = "block";
+    downloadLink.innerText = "Descargar Grabación (" + mimeType + ")";
+    recordedChunks = [];
+};
 
             mediaRecorder.start();
             document.getElementById("start").disabled = true;
