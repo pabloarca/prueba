@@ -27,11 +27,11 @@
 
             mediaRecorder.onstop = function() {
     const blob = new Blob(recordedChunks);
-    let mimeType = blob.type || 'audio/webm';  // Asume un tipo predeterminado si no se puede determinar
+    let mimeType = blob.type || 'audio/wav';  // Asume un tipo predeterminado si no se puede determinar
     const url = URL.createObjectURL(blob);
     const downloadLink = document.getElementById("downloadLink");
     downloadLink.href = url;
-    let extension = mimeType.split('/')[1] || 'webm';  // Usa 'webm' como extensión predeterminada
+    let extension = mimeType.split('/')[1] || 'wav';  // Usa 'webm' como extensión predeterminada
     downloadLink.download = "recording." + extension;
     downloadLink.style.display = "block";
     downloadLink.innerText = "Descargar Grabación (" + mimeType + ")";
