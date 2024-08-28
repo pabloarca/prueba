@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Formato de Grabación</title>
+</head>
+<body>
+    <h1>Prueba de Formato de Grabación</h1>
+    <button id="start">Iniciar Grabación</button>
+    <button id="stop" disabled>Detener Grabación</button>
+    <a id="downloadLink" style="display:none;">Descargar Grabación</a>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        document.getElementById("start").addEventListener("click", async function() {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = function(event) {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = function() {
+                const blob = new Blob(recordedChunks);
+                const url = URL.createObjectURL(blob);
+                const downloadLink = document.getElementById("downloadLink");
+                downloadLink.href = url;
+                downloadLink.download = "recording." + blob.type.split('/')[1];
+                downloadLink.style.display = "block";
+                downloadLink.innerText = "Descargar Grabación (" + blob.type + ")";
+                recordedChunks = [];
+            };
+
+            mediaRecorder.start();
+            document.getElementById("start").disabled = true;
+            document.getElementById("stop").disabled = false;
+        });
+
+        document.getElementById("stop").addEventListener("click", function() {
+            mediaRecorder.stop();
+            document.getElementById("start").disabled = false;
+            document.getElementById("stop").disabled = true;
+        });
+    </script>
+</body>
+</html>
