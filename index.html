@@ -6,8 +6,50 @@
     <title>Test Console</title>
 </head>
 <body>
+    <h1>MediaStream Recording API Test</h1>
+    <button id="startRecording">Start Recording</button>
+    <button id="stopRecording" disabled>Stop Recording</button>
+    <p id="status"></p>
+    <p id="format"></p>
+    <audio id="audioPlayback" controls></audio>
     <script>
-        console.log('Mensaje de prueba desde una página mínima');
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        document.getElementById("start").addEventListener("click", async function() {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = function(event) {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = function() {
+    const blob = new Blob(recordedChunks);
+    let mimeType = blob.type || 'audio/wav';  // Asume un tipo predeterminado si no se puede determinar
+    const url = URL.createObjectURL(blob);
+    const downloadLink = document.getElementById("downloadLink");
+    downloadLink.href = url;
+    let extension = mimeType.split('/')[1] || 'wav';  // Usa 'webm' como extensión predeterminada
+    downloadLink.download = "recording." + extension;
+    downloadLink.style.display = "block";
+    downloadLink.innerText = "Descargar Grabación (" + mimeType + ")";
+    recordedChunks = [];
+};
+
+            mediaRecorder.start();
+            document.getElementById("start").disabled = true;
+            document.getElementById("stop").disabled = false;
+
+ });
+
+        document.getElementById("stop").addEventListener("click", function() {
+            mediaRecorder.stop();
+            document.getElementById("start").disabled = false;
+            document.getElementById("stop").disabled = true;
+ });
     </script>
 </body>
 </html>
