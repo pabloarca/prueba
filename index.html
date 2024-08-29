@@ -3,66 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediaStream Recording API Test</title>
+    <title>Test Console</title>
 </head>
 <body>
-    <h1>MediaStream Recording API Test</h1>
-    <button id="startRecording">Start Recording</button>
-    <button id="stopRecording" disabled>Stop Recording</button>
-    <p id="status"></p>
-    <p id="format"></p>
-    <audio id="audioPlayback" controls></audio>
-
     <script>
-        let mediaRecorder;
-        let audioChunks = [];
-        const startButton = document.getElementById('startRecording');
-        const stopButton = document.getElementById('stopRecording');
-        const statusText = document.getElementById('status');
-        const formatText = document.getElementById('format');
-        const audioPlayback = document.getElementById('audioPlayback');
-
-        startButton.addEventListener('click', async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstart = () => {
-                    statusText.textContent = 'Recording...';
-                    startButton.disabled = true;
-                    stopButton.disabled = false;
-                    audioChunks = [];
-                };
-
-                mediaRecorder.onstop = () => {
-                    statusText.textContent = 'Recording stopped.';
-                    stopButton.disabled = true;
-                    startButton.disabled = false;
-
-                    const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    audioPlayback.src = audioUrl;
-                    audioPlayback.play();
-
-                    formatText.textContent = `Recorded format: ${mediaRecorder.mimeType}`;
-                };
-
-                mediaRecorder.start();
-            } catch (error) {
-                console.error('Error accessing microphone:', error);
-                statusText.textContent = 'Error accessing microphone.';
-            }
-        });
-
-        stopButton.addEventListener('click', () => {
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-            }
-        });
+        console.log('Mensaje de prueba desde una página mínima');
     </script>
 </body>
 </html>
