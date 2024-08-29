@@ -1,52 +1,67 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba de Formato de Grabación</title>
+    <title>MediaStream Recording API Test</title>
 </head>
 <body>
-    <h1>Prueba de Formato de Grabación</h1>
-    <button id="start">Iniciar Grabación</button>
-    <button id="stop" disabled>Detener Grabación</button>
-    <a id="downloadLink" style="display:none;">Descargar Grabación</a>
+    <h1>MediaStream Recording API Test</h1>
+    <button id="startRecording">Start Recording</button>
+    <button id="stopRecording" disabled>Stop Recording</button>
+    <p id="status"></p>
+    <p id="format"></p>
+    <audio id="audioPlayback" controls></audio>
 
     <script>
         let mediaRecorder;
-        let recordedChunks = [];
+        let audioChunks = [];
+        const startButton = document.getElementById('startRecording');
+        const stopButton = document.getElementById('stopRecording');
+        const statusText = document.getElementById('status');
+        const formatText = document.getElementById('format');
+        const audioPlayback = document.getElementById('audioPlayback');
 
-        document.getElementById("start").addEventListener("click", async function() {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
+        startButton.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
 
-            mediaRecorder.ondataavailable = function(event) {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
-                }
-            };
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
 
-            mediaRecorder.onstop = function() {
-    const blob = new Blob(recordedChunks);
-    let mimeType = blob.type || 'audio/wav';  // Asume un tipo predeterminado si no se puede determinar
-    const url = URL.createObjectURL(blob);
-    const downloadLink = document.getElementById("downloadLink");
-    downloadLink.href = url;
-    let extension = mimeType.split('/')[1] || 'wav';  // Usa 'webm' como extensión predeterminada
-    downloadLink.download = "recording." + extension;
-    downloadLink.style.display = "block";
-    downloadLink.innerText = "Descargar Grabación (" + mimeType + ")";
-    recordedChunks = [];
-};
+                mediaRecorder.onstart = () => {
+                    statusText.textContent = 'Recording...';
+                    startButton.disabled = true;
+                    stopButton.disabled = false;
+                    audioChunks = [];
+                };
 
-            mediaRecorder.start();
-            document.getElementById("start").disabled = true;
-            document.getElementById("stop").disabled = false;
+                mediaRecorder.onstop = () => {
+                    statusText.textContent = 'Recording stopped.';
+                    stopButton.disabled = true;
+                    startButton.disabled = false;
+
+                    const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioPlayback.src = audioUrl;
+                    audioPlayback.play();
+
+                    formatText.textContent = `Recorded format: ${mediaRecorder.mimeType}`;
+                };
+
+                mediaRecorder.start();
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                statusText.textContent = 'Error accessing microphone.';
+            }
         });
 
-        document.getElementById("stop").addEventListener("click", function() {
-            mediaRecorder.stop();
-            document.getElementById("start").disabled = false;
-            document.getElementById("stop").disabled = true;
+        stopButton.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
         });
     </script>
 </body>
